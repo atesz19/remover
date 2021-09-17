@@ -1,0 +1,23 @@
+name: Remover
+version: 1.0
+main: com.teszvesz.remover.MainPlugin
+api-version: 1.16
+load: STARTUP
+authors: [ atesz19 ]
+description: Remove items from world and chests!
+depend:
+  - OpenInv
+
+commands:
+  removefromchunk:
+    description: RemoveStuffFromPlayerChunk
+    usage: /removefromchunk
+    permission: asd.yes.lol
+  removefromenderchest:
+    description: RemoveStuffFromPlayersEC
+    usage: /removefromenderchest
+    permission: asd.yes.lol
+  removefrominv:
+    description: RemoveStuffFromPlayersinv
+    usage: /removefrominv
+    permission: asd.yes.lol
