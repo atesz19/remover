@@ -13,6 +13,10 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 public class InvRemove implements CommandExecutor {
 
     private final MainPlugin plugin;
@@ -29,55 +33,25 @@ public class InvRemove implements CommandExecutor {
 
     void removeAll(CommandSender sender) {
         val openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
+        val TIMEOUT = 30; // 30 sec
 
-        for (val p : Bukkit.getOfflinePlayers()) {
-            val player = openinv.loadPlayer(p);
-            if (player != null) {
-                sender.sendMessage(">" + p.getName() + " playerdata loaded...");
-                val inv = player.getInventory();
-
-                for(val m : MainPlugin.itemsList){
-                    inv.remove(m);
-                }
-
-                //ShulkerDelete
-
-                for (var i = 0; i < inv.getSize(); i++) {
-                    val item = inv.getItem(i);
-                    if(item != null) {
-                        if (item.getItemMeta() instanceof BlockStateMeta) {
-                            val im = (BlockStateMeta) item.getItemMeta();
-                            if (im.getBlockState() instanceof ShulkerBox) {
-
-                                val shulker = (ShulkerBox) im.getBlockState();
-
-                                for(val m : MainPlugin.itemsList){
-                                    shulker.getInventory().remove(m);
-                                }
-
-                                im.setBlockState(shulker);
-                                shulker.update();
-                                item.setItemMeta(im);
-                                inv.setItem(i, item);
-
-                            }
-                        }
-                    }
-
-                }
-                //playervaults
-                for(var i = 1; i <= 100; i++){
-                    if(VaultManager.getInstance().vaultExists(player.getUniqueId().toString(),i)){
-                        val pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
-                        if(pv != null){
+        TaskUtility.runWithTimingsAsync("inventory removal", () -> {
+            for (val p : Bukkit.getOfflinePlayers()) {
+                try {
+                    TaskUtility.waitForBukkitTask(plugin, () -> {
+                        val player = openinv.loadPlayer(p);
+                        if (player != null) {
+                            sender.sendMessage(">" + p.getName() + " playerdata loaded...");
+                            val inv = player.getInventory();
 
                             for(val m : MainPlugin.itemsList){
-                                pv.remove(m);
+                                inv.remove(m);
                             }
 
+                            //ShulkerDelete
 
-                            for (var j = 0; j < pv.getSize(); j++) {
-                                val item = pv.getItem(j);
+                            for (var i = 0; i < inv.getSize(); i++) {
+                                val item = inv.getItem(i);
                                 if(item != null) {
                                     if (item.getItemMeta() instanceof BlockStateMeta) {
                                         val im = (BlockStateMeta) item.getItemMeta();
@@ -92,25 +66,68 @@ public class InvRemove implements CommandExecutor {
                                             im.setBlockState(shulker);
                                             shulker.update();
                                             item.setItemMeta(im);
-                                            pv.setItem(j, item);
+                                            inv.setItem(i, item);
 
                                         }
                                     }
                                 }
 
                             }
+                            //playervaults
+                            for(var i = 1; i <= 100; i++){
+                                if(VaultManager.getInstance().vaultExists(player.getUniqueId().toString(),i)){
+                                    val pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
+                                    if(pv != null){
 
-                            VaultManager.getInstance().saveVault(pv, player.getUniqueId().toString(), i);
+                                        for(val m : MainPlugin.itemsList){
+                                            pv.remove(m);
+                                        }
+
+
+                                        for (var j = 0; j < pv.getSize(); j++) {
+                                            val item = pv.getItem(j);
+                                            if(item != null) {
+                                                if (item.getItemMeta() instanceof BlockStateMeta) {
+                                                    val im = (BlockStateMeta) item.getItemMeta();
+                                                    if (im.getBlockState() instanceof ShulkerBox) {
+
+                                                        val shulker = (ShulkerBox) im.getBlockState();
+
+                                                        for(val m : MainPlugin.itemsList){
+                                                            shulker.getInventory().remove(m);
+                                                        }
+
+                                                        im.setBlockState(shulker);
+                                                        shulker.update();
+                                                        item.setItemMeta(im);
+                                                        pv.setItem(j, item);
+
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+                                        VaultManager.getInstance().saveVault(pv, player.getUniqueId().toString(), i);
+                                    }
+                                }
+                            }
+
+                            player.saveData();
+                            openinv.unload(p);
                         }
-                    }
+                    }, TIMEOUT, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (TimeoutException e) {
+                    plugin.getLogger().warning("failed to process inventory of " + p.getName() + " in " + TIMEOUT + "s");
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
                 }
-
-                player.saveData();
-                openinv.unload(p);
             }
-
-        }
-
+            return true;
+        });
     }
 
 
