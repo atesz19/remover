@@ -2,134 +2,132 @@ package com.teszvesz.remover;
 
 import com.drtshock.playervaults.PlayerVaults;
 import com.drtshock.playervaults.vaultmanagement.VaultManager;
-import com.lishid.openinv.IOpenInv;
-import com.lishid.openinv.internal.ISpecialPlayerInventory;
+import com.lishid.openinv.OpenInv;
+import lombok.val;
+import lombok.var;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class InvRemove implements CommandExecutor {
 
-    Plugin plugin;
+    private final MainPlugin plugin;
 
-    public InvRemove(Plugin plugin) {
+    public InvRemove(MainPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-
-        try {
-            removeAll(commandSender);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
-
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        removeAll(sender);
         return true;
     }
 
-    void removeAll(CommandSender sender) throws InstantiationException {
+    void removeAll(CommandSender sender) {
+        val openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
+        val TIMEOUT = 30; // 30 sec
 
-        Plugin openinv = plugin.getServer().getPluginManager().getPlugin("OpenInv");
+        TaskUtility.runWithTimingsAsync("inventory removal", () -> {
+            for (val p : Bukkit.getOfflinePlayers()) {
+                try {
+                    TaskUtility.waitForBukkitTask(plugin, () -> {
+                        val player = openinv.loadPlayer(p);
+                        if (player != null) {
+                            sender.sendMessage(">" + p.getName() + " playerdata loaded...");
+                            val inv = player.getInventory();
 
-        List<OfflinePlayer> offlist = new ArrayList<>(Arrays.asList(Bukkit.getOfflinePlayers()));
-
-        for (OfflinePlayer p : offlist) {
-            Player player = ((IOpenInv) openinv).loadPlayer(p);
-            if (player != null) {
-                sender.sendMessage(">" + p.getName() + " playerdata loaded...");
-                Inventory inv = player.getInventory();
-
-                for(Material m : MainPlugin.itemsList){
-                    inv.remove(m);
-                }
-
-                //ShulkerDelete
-
-                for (int i = 0; i < inv.getSize(); i++) {
-                    ItemStack item = inv.getItem(i);
-                    if(item != null) {
-                        if (item.getItemMeta() instanceof BlockStateMeta) {
-                            BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
-                            if (im.getBlockState() instanceof ShulkerBox) {
-
-                                ShulkerBox shulker = (ShulkerBox) im.getBlockState();
-
-                                for(Material m : MainPlugin.itemsList){
-                                    shulker.getInventory().remove(m);
-                                }
-
-                                im.setBlockState(shulker);
-                                shulker.update();
-                                item.setItemMeta(im);
-                                inv.setItem(i, item);
-
-                            }
-                        }
-                    }
-
-                }
-                //playervaults
-                for(int i = 1; i <= 100; i++){
-                    if(VaultManager.getInstance().vaultExists(player.getUniqueId().toString(),i)){
-                        Inventory pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
-                        if(pv != null){
-
-                            for(Material m : MainPlugin.itemsList){
-                                pv.remove(m);
+                            for(val m : MainPlugin.itemsList){
+                                inv.remove(m);
                             }
 
+                            //ShulkerDelete
 
-                            for (int j = 0; j < pv.getSize(); j++) {
-                                ItemStack item = pv.getItem(j);
+                            for (var i = 0; i < inv.getSize(); i++) {
+                                val item = inv.getItem(i);
                                 if(item != null) {
                                     if (item.getItemMeta() instanceof BlockStateMeta) {
-                                        BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+                                        val im = (BlockStateMeta) item.getItemMeta();
                                         if (im.getBlockState() instanceof ShulkerBox) {
 
-                                            ShulkerBox shulker = (ShulkerBox) im.getBlockState();
+                                            val shulker = (ShulkerBox) im.getBlockState();
 
-                                            for(Material m : MainPlugin.itemsList){
+                                            for(val m : MainPlugin.itemsList){
                                                 shulker.getInventory().remove(m);
                                             }
 
                                             im.setBlockState(shulker);
                                             shulker.update();
                                             item.setItemMeta(im);
-                                            pv.setItem(j, item);
+                                            inv.setItem(i, item);
 
                                         }
                                     }
                                 }
 
                             }
+                            //playervaults
+                            for(var i = 1; i <= 100; i++){
+                                if(VaultManager.getInstance().vaultExists(player.getUniqueId().toString(),i)){
+                                    val pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
+                                    if(pv != null){
 
-                            VaultManager.getInstance().saveVault(pv, player.getUniqueId().toString(), i);
+                                        for(val m : MainPlugin.itemsList){
+                                            pv.remove(m);
+                                        }
+
+
+                                        for (var j = 0; j < pv.getSize(); j++) {
+                                            val item = pv.getItem(j);
+                                            if(item != null) {
+                                                if (item.getItemMeta() instanceof BlockStateMeta) {
+                                                    val im = (BlockStateMeta) item.getItemMeta();
+                                                    if (im.getBlockState() instanceof ShulkerBox) {
+
+                                                        val shulker = (ShulkerBox) im.getBlockState();
+
+                                                        for(val m : MainPlugin.itemsList){
+                                                            shulker.getInventory().remove(m);
+                                                        }
+
+                                                        im.setBlockState(shulker);
+                                                        shulker.update();
+                                                        item.setItemMeta(im);
+                                                        pv.setItem(j, item);
+
+                                                    }
+                                                }
+                                            }
+
+                                        }
+
+                                        VaultManager.getInstance().saveVault(pv, player.getUniqueId().toString(), i);
+                                    }
+                                }
+                            }
+
+                            player.saveData();
+                            openinv.unload(p);
                         }
-                    }
+                    }, TIMEOUT, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                } catch (TimeoutException e) {
+                    plugin.getLogger().warning("failed to process inventory of " + p.getName() + " in " + TIMEOUT + "s");
+                } catch (ExecutionException e) {
+                    throw new RuntimeException(e);
                 }
-
-                player.saveData();
-                ((IOpenInv) openinv).unload(p);
             }
-
-        }
-
+            return true;
+        });
     }
 
 
@@ -143,7 +141,7 @@ public class InvRemove implements CommandExecutor {
         if (player == null || !player.isOnline()) {
             return 6 * 9;
         }
-        for (int i = 6; i != 0; i--) {
+        for (var i = 6; i != 0; i--) {
             if (player.getPlayer().hasPermission("playervaults.size." + i)) {
                 return i * 9;
             }

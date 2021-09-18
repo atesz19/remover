@@ -2,17 +2,15 @@ package com.teszvesz.remover;
 
 
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import sun.awt.image.ImageWatched;
 
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainPlugin extends JavaPlugin {
 
-    public static final List<Material> itemsList = Arrays.asList(
+    public static final List<Material> itemsList = Collections.unmodifiableList(Arrays.asList(
             Material.SPAWNER,
             Material.PAPER,
             Material.CARROT,
@@ -98,8 +96,8 @@ public class MainPlugin extends JavaPlugin {
             Material.PUFFERFISH,
             Material.MUTTON,
             Material.COOKED_MUTTON
-    );
-    public static final List<Material> blocksList = Arrays.asList(
+    ));
+    public static final List<Material> blocksList = Collections.unmodifiableList(Arrays.asList(
             Material.SPAWNER,
             Material.BONE_BLOCK,
             Material.PUMPKIN,
@@ -112,7 +110,7 @@ public class MainPlugin extends JavaPlugin {
             Material.SPONGE,
             Material.WET_SPONGE,
             Material.OBSERVER
-    );
+    ));
 
     @Override
     public void onEnable() {
@@ -123,11 +121,6 @@ public class MainPlugin extends JavaPlugin {
         this.getCommand("removefromenderchest").setExecutor(new EnderChestRemove(this));
         this.getCommand("removefrominv").setExecutor(new InvRemove(this));
 
-    }
-
-    @Override
-    public void onDisable() {
-        super.onDisable();
     }
 
 }
