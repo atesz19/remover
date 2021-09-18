@@ -2,12 +2,9 @@ package com.teszvesz.remover;
 
 
 import org.bukkit.Material;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import sun.awt.image.ImageWatched;
 
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public class MainPlugin extends JavaPlugin {
@@ -123,11 +120,6 @@ public class MainPlugin extends JavaPlugin {
         this.getCommand("removefromenderchest").setExecutor(new EnderChestRemove(this));
         this.getCommand("removefrominv").setExecutor(new InvRemove(this));
 
-    }
-
-    @Override
-    public void onDisable() {
-        super.onDisable();
     }
 
 }

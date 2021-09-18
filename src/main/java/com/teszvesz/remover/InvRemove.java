@@ -2,8 +2,7 @@ package com.teszvesz.remover;
 
 import com.drtshock.playervaults.PlayerVaults;
 import com.drtshock.playervaults.vaultmanagement.VaultManager;
-import com.lishid.openinv.IOpenInv;
-import com.lishid.openinv.internal.ISpecialPlayerInventory;
+import com.lishid.openinv.OpenInv;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -15,42 +14,32 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.plugin.Plugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class InvRemove implements CommandExecutor {
 
-    Plugin plugin;
+    private final MainPlugin plugin;
 
-    public InvRemove(Plugin plugin) {
+    public InvRemove(MainPlugin plugin) {
         this.plugin = plugin;
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
-
-        try {
-            removeAll(commandSender);
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        }
-
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        removeAll(sender);
         return true;
     }
 
-    void removeAll(CommandSender sender) throws InstantiationException {
-
-        Plugin openinv = plugin.getServer().getPluginManager().getPlugin("OpenInv");
+    void removeAll(CommandSender sender) {
+        OpenInv openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
 
         List<OfflinePlayer> offlist = new ArrayList<>(Arrays.asList(Bukkit.getOfflinePlayers()));
 
         for (OfflinePlayer p : offlist) {
-            Player player = ((IOpenInv) openinv).loadPlayer(p);
+            Player player = openinv.loadPlayer(p);
             if (player != null) {
                 sender.sendMessage(">" + p.getName() + " playerdata loaded...");
                 Inventory inv = player.getInventory();
@@ -125,7 +114,7 @@ public class InvRemove implements CommandExecutor {
                 }
 
                 player.saveData();
-                ((IOpenInv) openinv).unload(p);
+                openinv.unload(p);
             }
 
         }
