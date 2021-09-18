@@ -15,10 +15,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 public class InvRemove implements CommandExecutor {
 
     private final MainPlugin plugin;
@@ -36,9 +32,7 @@ public class InvRemove implements CommandExecutor {
     void removeAll(CommandSender sender) {
         OpenInv openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
 
-        List<OfflinePlayer> offlist = new ArrayList<>(Arrays.asList(Bukkit.getOfflinePlayers()));
-
-        for (OfflinePlayer p : offlist) {
+        for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
             Player player = openinv.loadPlayer(p);
             if (player != null) {
                 sender.sendMessage(">" + p.getName() + " playerdata loaded...");
