@@ -5,11 +5,12 @@ import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class MainPlugin extends JavaPlugin {
 
-    public static final List<Material> itemsList = Arrays.asList(
+    public static final List<Material> itemsList = Collections.unmodifiableList(Arrays.asList(
             Material.SPAWNER,
             Material.PAPER,
             Material.CARROT,
@@ -95,8 +96,8 @@ public class MainPlugin extends JavaPlugin {
             Material.PUFFERFISH,
             Material.MUTTON,
             Material.COOKED_MUTTON
-    );
-    public static final List<Material> blocksList = Arrays.asList(
+    ));
+    public static final List<Material> blocksList = Collections.unmodifiableList(Arrays.asList(
             Material.SPAWNER,
             Material.BONE_BLOCK,
             Material.PUMPKIN,
@@ -109,7 +110,7 @@ public class MainPlugin extends JavaPlugin {
             Material.SPONGE,
             Material.WET_SPONGE,
             Material.OBSERVER
-    );
+    ));
 
     @Override
     public void onEnable() {
