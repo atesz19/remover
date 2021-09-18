@@ -1,17 +1,19 @@
 package com.teszvesz.remover;
 
+import lombok.val;
+import lombok.var;
 import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 
 import java.io.File;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RemoveChunk implements CommandExecutor {
+
+    private static final Pattern REGION_PATTERN = Pattern.compile("r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca");
 
     private final MainPlugin plugin;
 
@@ -21,7 +23,7 @@ public class RemoveChunk implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        World world = Bukkit.getWorld("world");
+        val world = Bukkit.getWorld("world");
         if (world != null) {
             loadAllChunks(world, sender);
             sender.sendMessage("DONE!");
@@ -33,36 +35,34 @@ public class RemoveChunk implements CommandExecutor {
 
     private void loadAllChunks(World world, CommandSender sender) {
 
-        final Pattern regionPattern = Pattern.compile("r\\.(-?[0-9]+)\\.(-?[0-9]+)\\.mca");
+        val worldDir = new File(Bukkit.getWorldContainer(), world.getName());
+        val regionDir = new File(worldDir, "region");
 
-        File worldDir = new File(Bukkit.getWorldContainer(), world.getName());
-        File regionDir = new File(worldDir, "region");
-
-        File[] regionFiles = regionDir.listFiles((dir, name) -> regionPattern.matcher(name).matches());
+        val regionFiles = regionDir.listFiles((dir, name) -> REGION_PATTERN.matcher(name).matches());
 
         Bukkit.getLogger().info("Found " + (regionFiles.length * 1024) + " chunk candidates in " + regionFiles.length + " files to check for loading ...");
 
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            for (File f : regionFiles) {
+            for (val f : regionFiles) {
                 // extract coordinates from filename
-                Matcher matcher = regionPattern.matcher(f.getName());
+                val matcher = REGION_PATTERN.matcher(f.getName());
                 if (!matcher.matches()) {
                     Bukkit.getLogger().warning("FilenameFilter accepted unmatched filename: " + f.getName());
                     continue;
                 }
 
-                int mcaX = Integer.parseInt(matcher.group(1));
-                int mcaZ = Integer.parseInt(matcher.group(2));
+                val mcaX = Integer.parseInt(matcher.group(1));
+                val mcaZ = Integer.parseInt(matcher.group(2));
 
-                for (int cx = 0; cx < 32; cx++) {
-                    for (int cz = 0; cz < 32; cz++) {
-                        final int chunkX = (mcaX << 5) + cx;
-                        final int chunkZ = (mcaZ << 5) + cz;
+                for (var cx = 0; cx < 32; cx++) {
+                    for (var cz = 0; cz < 32; cz++) {
+                        val chunkX = (mcaX << 5) + cx;
+                        val chunkZ = (mcaZ << 5) + cz;
 
                         Bukkit.getScheduler().runTask(plugin, () -> {
-                            boolean b = world.loadChunk(chunkX, chunkZ, false);
+                            val b = world.loadChunk(chunkX, chunkZ, false);
                             if(b){
-                                Chunk c = world.getChunkAt(chunkX, chunkZ);
+                                val c = world.getChunkAt(chunkX, chunkZ);
                                 sender.sendMessage("Loaded Chunk: " + c.getX() + ":" + c.getZ());
                                 ChunkLoadEv.processChunk(c);
                                 c.unload();
@@ -77,7 +77,6 @@ public class RemoveChunk implements CommandExecutor {
                 }
             }
         });
-
     }
 
 }

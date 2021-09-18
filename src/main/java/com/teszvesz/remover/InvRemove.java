@@ -3,16 +3,14 @@ package com.teszvesz.remover;
 import com.drtshock.playervaults.PlayerVaults;
 import com.drtshock.playervaults.vaultmanagement.VaultManager;
 import com.lishid.openinv.OpenInv;
+import lombok.val;
+import lombok.var;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.ShulkerBox;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 
 public class InvRemove implements CommandExecutor {
@@ -30,30 +28,30 @@ public class InvRemove implements CommandExecutor {
     }
 
     void removeAll(CommandSender sender) {
-        OpenInv openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
+        val openinv = (OpenInv) plugin.getServer().getPluginManager().getPlugin("OpenInv");
 
-        for (OfflinePlayer p : Bukkit.getOfflinePlayers()) {
-            Player player = openinv.loadPlayer(p);
+        for (val p : Bukkit.getOfflinePlayers()) {
+            val player = openinv.loadPlayer(p);
             if (player != null) {
                 sender.sendMessage(">" + p.getName() + " playerdata loaded...");
-                Inventory inv = player.getInventory();
+                val inv = player.getInventory();
 
-                for(Material m : MainPlugin.itemsList){
+                for(val m : MainPlugin.itemsList){
                     inv.remove(m);
                 }
 
                 //ShulkerDelete
 
-                for (int i = 0; i < inv.getSize(); i++) {
-                    ItemStack item = inv.getItem(i);
+                for (var i = 0; i < inv.getSize(); i++) {
+                    val item = inv.getItem(i);
                     if(item != null) {
                         if (item.getItemMeta() instanceof BlockStateMeta) {
-                            BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+                            val im = (BlockStateMeta) item.getItemMeta();
                             if (im.getBlockState() instanceof ShulkerBox) {
 
-                                ShulkerBox shulker = (ShulkerBox) im.getBlockState();
+                                val shulker = (ShulkerBox) im.getBlockState();
 
-                                for(Material m : MainPlugin.itemsList){
+                                for(val m : MainPlugin.itemsList){
                                     shulker.getInventory().remove(m);
                                 }
 
@@ -68,26 +66,26 @@ public class InvRemove implements CommandExecutor {
 
                 }
                 //playervaults
-                for(int i = 1; i <= 100; i++){
+                for(var i = 1; i <= 100; i++){
                     if(VaultManager.getInstance().vaultExists(player.getUniqueId().toString(),i)){
-                        Inventory pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
+                        val pv = VaultManager.getInstance().getVault(player.getUniqueId().toString(), i);
                         if(pv != null){
 
-                            for(Material m : MainPlugin.itemsList){
+                            for(val m : MainPlugin.itemsList){
                                 pv.remove(m);
                             }
 
 
-                            for (int j = 0; j < pv.getSize(); j++) {
-                                ItemStack item = pv.getItem(j);
+                            for (var j = 0; j < pv.getSize(); j++) {
+                                val item = pv.getItem(j);
                                 if(item != null) {
                                     if (item.getItemMeta() instanceof BlockStateMeta) {
-                                        BlockStateMeta im = (BlockStateMeta) item.getItemMeta();
+                                        val im = (BlockStateMeta) item.getItemMeta();
                                         if (im.getBlockState() instanceof ShulkerBox) {
 
-                                            ShulkerBox shulker = (ShulkerBox) im.getBlockState();
+                                            val shulker = (ShulkerBox) im.getBlockState();
 
-                                            for(Material m : MainPlugin.itemsList){
+                                            for(val m : MainPlugin.itemsList){
                                                 shulker.getInventory().remove(m);
                                             }
 
@@ -126,7 +124,7 @@ public class InvRemove implements CommandExecutor {
         if (player == null || !player.isOnline()) {
             return 6 * 9;
         }
-        for (int i = 6; i != 0; i--) {
+        for (var i = 6; i != 0; i--) {
             if (player.getPlayer().hasPermission("playervaults.size." + i)) {
                 return i * 9;
             }
