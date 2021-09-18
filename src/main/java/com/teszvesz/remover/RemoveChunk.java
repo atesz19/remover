@@ -1,6 +1,5 @@
 package com.teszvesz.remover;
 
-import com.wimbli.WorldBorder.WorldBorder;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -86,7 +85,7 @@ public class RemoveChunk implements CommandExecutor {
                                     boolean b = world.loadChunk((mcaX << 5) + cx2, (mcaZ << 5) + cz2, false);
                                     if(b){
                                         Chunk c = world.getChunkAt((mcaX << 5) + cx2, (mcaZ << 5) + cz2);
-                                        sender.sendMessage("Loaded Chunk: " + c.getChunkKey());
+                                        sender.sendMessage("Loaded Chunk: " + c.getX() + ":" + c.getZ());
                                         Chunks.processChunk(c);
                                         c.unload();
                                     }
