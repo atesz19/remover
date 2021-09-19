@@ -29,17 +29,15 @@ public final class TaskUtility {
         completableFuture.get(timeout, timeUnit);
     }
 
-    public static <T> CompletableFuture<T> runWithTimingsAsync(final String name, final Supplier<T> task) {
+    public static <T> CompletableFuture<T> runWithTimingsAsync(Plugin plugin, String name, Supplier<T> task) {
         CompletableFuture<T> completableFuture = new CompletableFuture<>();
-        Thread thread = new Thread(() -> withTimings(name, () -> {
+        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> withTimings(name, () -> {
             try {
                 completableFuture.complete(task.get());
             } catch (Throwable t) {
                 completableFuture.completeExceptionally(t);
             }
-        }), name);
-        thread.setDaemon(true);
-        thread.start();
+        }));
         return completableFuture;
     }
 

@@ -3,9 +3,12 @@ package com.teszvesz.remover;
 import lombok.val;
 import lombok.var;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.block.ShulkerBox;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,9 +20,19 @@ import org.bukkit.inventory.meta.BlockStateMeta;
 
 public class ChunkLoadEv implements Listener {
 
+    private boolean enabled = false;
+
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent e){
-        processChunk(e.getChunk());
+        if (enabled) {
+            processChunk(e.getChunk());
+        }
+    }
+
+    public boolean enable(CommandSender sender, Command cmd, String label, String[] args) {
+        enabled = !enabled;
+        sender.sendMessage("Chunk processing on ChunkLoadEvent is " + (enabled ? ChatColor.GREEN + "enabled" : ChatColor.RED + "disabled"));
+        return false;
     }
 
     public static void processChunk(Chunk c) {
@@ -43,7 +56,7 @@ public class ChunkLoadEv implements Listener {
 
                         for (val m : MainPlugin.itemsList) {
                             if (i.contains(m)) {
-                                Bukkit.getLogger().info("Removed: " + m.toString());
+                                Bukkit.getLogger().info("Removed: " + m);
                                 i.remove(m);
                             }
                         }
