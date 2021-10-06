@@ -9,13 +9,11 @@ depend:
   - OpenInv
 
 commands:
+  enablechunkremove:
+    permission: asd.yes.lol
   removefromchunk:
     description: RemoveStuffFromPlayerChunk
     usage: /removefromchunk
-    permission: asd.yes.lol
-  removefromenderchest:
-    description: RemoveStuffFromPlayersEC
-    usage: /removefromenderchest
     permission: asd.yes.lol
   removefrominv:
     description: RemoveStuffFromPlayersinv

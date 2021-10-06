@@ -1,6 +1,7 @@
 package com.teszvesz.remover;
 
 
+import lombok.val;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -114,13 +115,13 @@ public class MainPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        val cl = new ChunkLoadEv();
 
-        getServer().getPluginManager().registerEvents(new ChunkLoadEv(), this);
+        getServer().getPluginManager().registerEvents(cl, this);
 
-        this.getCommand("removefromchunk").setExecutor(new RemoveChunk(this));
-        this.getCommand("removefromenderchest").setExecutor(new EnderChestRemove(this));
-        this.getCommand("removefrominv").setExecutor(new InvRemove(this));
-
+        getCommand("enablechunkremove").setExecutor(cl::enable);
+        getCommand("removefromchunk").setExecutor(new RemoveChunk(this));
+        getCommand("removefrominv").setExecutor(new InvRemove(this));
     }
 
 }
